@@ -122,6 +122,18 @@ header input {
   align-self: center;
   border-radius: 0.5rem;
   width: 100%;
+  transition: max-height 1s;
+  max-height: 5000px;
+}
+
+.form-container.hidden {
+  transition: max-height 0.5s;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.form-container.startHidden {
+  display: none;
 }
 
 form {
@@ -269,7 +281,7 @@ form .accent-btn {
   color: var(--clr-gray);
 }
 
-.page-btn.active {
+.page-btn.current {
   background-color: var(--clr-accent);
   color: var(--clr-gray);
 }
