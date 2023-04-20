@@ -524,10 +524,15 @@ window.addEventListener('DOMContentLoaded', postBlogs);
 
 
 const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const monthNames = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 function postBlogs(e) {
 
-  for(let i =0; i<posts.length; i++){
+  const NUM_PAGES = Math.ceil(posts.length/PAGE_LIMIT);
+  console.log(NUM_PAGES);
+  for(let i =0; i<PAGE_LIMIT; i++){
     let article = document.createElement('article');
     article.classList.add("card");
     article.setAttribute('data-id', posts[i].id);
@@ -545,7 +550,7 @@ function postBlogs(e) {
     let headText = document.createElement('div');
     let postDate = new Date(posts[i].date);
     
-    headText.innerText = posts[i].author + " ◦ " + weekday[postDate.getDay()] +" "+ postDate.getMonth() +" "+ postDate.getDate() + " "+ postDate.getFullYear();
+    headText.innerText = posts[i].author + " ◦ " + weekday[postDate.getDay()] +" "+ monthNames[postDate.getMonth()] +" "+ postDate.getDate() + " "+ postDate.getFullYear();
 
     cardHeader.appendChild(headText);
     article.appendChild(cardHeader);
@@ -558,7 +563,15 @@ function postBlogs(e) {
     body.appendChild(title);
 
     let text = document.createElement('p');
-    text.innerText = posts[i].content;
+    let postContent = posts[i].content;
+    if(posts[i].content.length > MAX_LENGTH){
+      postContent = postContent.slice(0, MAX_LENGTH);
+      postContent = postContent + " ...";
+      text.innerText = postContent;
+    }else{
+      text.innerText = postContent;
+    }
+    
     body.appendChild(text);
 
     article.appendChild(body);
