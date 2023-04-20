@@ -519,10 +519,14 @@ const posts = [
 
 posts.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 
+//static page part references
 const articlesContainer = document.querySelector('.articles-wrapper');
 const pageContainer = document.querySelector('.pagination-container');
 const formContainer = document.querySelector('.form-container');
+const articleWrapper = document.querySelector('.article-wrapper');
 
+
+//all event listeners and their specific selectors
 articlesContainer.addEventListener('click', showArticle);
 
 formContainer.classList.add('hidden');
@@ -535,18 +539,27 @@ const submitBtn = formContainer.children[0].children[3];
 const form = formContainer.children[0];
 form.addEventListener('submit', postArticle);
 
+const closeBtn = document.querySelector('.close-btn');
+closeBtn.addEventListener('click', hideArticle);
 
+const searchBar = document.querySelector('.search-bar').children[1];
+searchBar.addEventListener('change', limitArticles);
+
+//gobal variables
 const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 var currentPage = 0;
-
+var currentList = posts;
 
 function postBlogs(e) {
 
-  const NUM_PAGES = Math.ceil(posts.length / PAGE_LIMIT);
+  const NUM_PAGES = Math.ceil(currentList.length / PAGE_LIMIT);
 
+  while (pageContainer.firstChild) {
+    pageContainer.removeChild(pageContainer.firstChild);
+  }
   for (let i = 0; i < NUM_PAGES; i++) {
     let pageBtn = document.createElement('button');
     pageBtn.classList.add('page-btn');
@@ -559,9 +572,7 @@ function postBlogs(e) {
     pageBtn.addEventListener('click', switchPage);
   }
 
-
-
-  generateArticles();
+  generateArticles(currentList);
 
 }
 
@@ -569,7 +580,7 @@ function switchPage(e) {
   currentPage = e.target.id;
   document.querySelector('.current').classList.remove('current');
   e.target.classList.add('current');
-  generateArticles();
+  generateArticles(currentList);
 }
 
 function toggleForm(e) {
@@ -580,31 +591,31 @@ function toggleForm(e) {
   }
 }
 
-
-function generateArticles() {
+function generateArticles(articleList) {
+  let postList = articleList;
   let postStart = (currentPage) * PAGE_LIMIT
   while (articlesContainer.firstChild) {
     articlesContainer.removeChild(articlesContainer.firstChild);
   }
-  for (let i = postStart; i < postStart + PAGE_LIMIT && i < posts.length; i++) {
+  for (let i = postStart; i < postStart + PAGE_LIMIT && i < postList.length; i++) {
     let article = document.createElement('article');
     article.classList.add("card");
-    article.setAttribute('data-id', posts[i].id);
+    article.setAttribute('data-id', postList[i].id);
 
     let cardHeader = document.createElement('div');
     cardHeader.classList.add("card-header");
 
     let profilePic = document.createElement('img');
-    profilePic.src = posts[i].profile;
+    profilePic.src = postList[i].profile;
     profilePic.alt = "profile picture";
     profilePic.classList.add("avatar");
 
     cardHeader.appendChild(profilePic);
 
     let headText = document.createElement('div');
-    let postDate = new Date(posts[i].date);
+    let postDate = new Date(postList[i].date);
 
-    headText.innerText = posts[i].author + " • " + weekday[postDate.getDay()] + " " + monthNames[postDate.getMonth()] + " " + postDate.getDate() + " " + postDate.getFullYear();
+    headText.innerText = postList[i].author + " • " + weekday[postDate.getDay()] + " " + monthNames[postDate.getMonth()] + " " + postDate.getDate() + " " + postDate.getFullYear();
 
     cardHeader.appendChild(headText);
     article.appendChild(cardHeader);
@@ -613,12 +624,12 @@ function generateArticles() {
     body.classList.add('card-body');
 
     let title = document.createElement('h3');
-    title.innerText = posts[i].title;
+    title.innerText = postList[i].title;
     body.appendChild(title);
 
     let text = document.createElement('p');
-    let postContent = posts[i].content;
-    if (posts[i].content.length > MAX_LENGTH) {
+    let postContent = postList[i].content;
+    if (postList[i].content.length > MAX_LENGTH) {
       postContent = postContent.slice(0, MAX_LENGTH);
       postContent = postContent + " ...";
       text.innerText = postContent;
@@ -650,7 +661,9 @@ function postArticle(e) {
   currentPage = 0;
   document.querySelector('.current').classList.remove('current');
   document.getElementById('0').classList.add('current');
-  generateArticles();
+  currentList = posts;
+  searchBar.value = '';
+  postBlogs();
 
   formContainer.classList.add('hidden');
   formContainer.children[0].reset();
@@ -663,7 +676,6 @@ function showArticle(e) {
     document.querySelector('.modal').classList.remove('hidden');
     let targetID = e.target.closest('.card').dataset.id;
     let targetArticle = posts.find(element => element.id == targetID);
-    let articleWrapper = document.querySelector('.article-wrapper');
 
     let title = document.createElement('h2');
     title.innerText = targetArticle.title;
@@ -697,4 +709,17 @@ function showArticle(e) {
     articleWrapper.appendChild(text);
 
   }
+}
+
+function hideArticle(e) {
+  while (articleWrapper.firstChild) {
+    articleWrapper.removeChild(articleWrapper.firstChild);
+  }
+  document.querySelector('.modal').classList.add('hidden');
+}
+
+function limitArticles(e) {
+  currentList = posts.filter(element => element.title.toLowerCase().includes(e.target.value.toLowerCase()));
+  postBlogs();
+
 }
