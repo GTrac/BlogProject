@@ -519,7 +519,8 @@ const posts = [
 
 posts.sort((a, b)=>Date.parse(a.date) - Date.parse(b.date));
 
-const articlesContainer = document.querySelector('.articles-wrapper')
+const articlesContainer = document.querySelector('.articles-wrapper');
+const pageContainer = document.querySelector('.pagination-container');
 window.addEventListener('DOMContentLoaded', postBlogs);
 
 
@@ -527,11 +528,29 @@ const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Sa
 const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
+var currentPage = 0;
 
 function postBlogs(e) {
 
   const NUM_PAGES = Math.ceil(posts.length/PAGE_LIMIT);
   console.log(NUM_PAGES);
+
+ 
+
+  for(let i=0; i<NUM_PAGES;i++) {
+    let pageBtn = document.createElement('button');
+    pageBtn.classList.add('page-btn');
+    pageBtn.innerText = (i+1);
+    pageBtn.id = i;
+    if(i==0){
+      pageBtn.classList.add('active');
+    }
+    pageContainer.appendChild(pageBtn);
+    window.addEventListener('click', switchPage);
+  }
+
+
+
   for(let i =0; i<PAGE_LIMIT; i++){
     let article = document.createElement('article');
     article.classList.add("card");
@@ -571,11 +590,66 @@ function postBlogs(e) {
     }else{
       text.innerText = postContent;
     }
-    
+
     body.appendChild(text);
 
     article.appendChild(body);
     articlesContainer.appendChild(article);
   }
   
+}
+
+function switchPage(e){
+  let pageNumber = e.target.id;
+  let postStart = (pageNumber)*PAGE_LIMIT
+  document.querySelector('.active').classList.remove('active');
+  e.target.classList.add('active');
+  while(articlesContainer.firstChild){
+    articlesContainer.removeChild(articlesContainer.firstChild);
+  }
+  for(let i = postStart; i<postStart+PAGE_LIMIT && i<posts.length; i++){
+    let article = document.createElement('article');
+    article.classList.add("card");
+    article.setAttribute('data-id', posts[i].id);
+
+    let cardHeader = document.createElement('div');
+    cardHeader.classList.add("card-header");
+
+    let profilePic = document.createElement('img');
+    profilePic.src = posts[i].profile;
+    profilePic.alt = "profile picture";
+    profilePic.classList.add("avatar");
+
+    cardHeader.appendChild(profilePic);
+
+    let headText = document.createElement('div');
+    let postDate = new Date(posts[i].date);
+    
+    headText.innerText = posts[i].author + " ◦ " + weekday[postDate.getDay()] +" "+ monthNames[postDate.getMonth()] +" "+ postDate.getDate() + " "+ postDate.getFullYear();
+
+    cardHeader.appendChild(headText);
+    article.appendChild(cardHeader);
+
+    let body = document.createElement('div');
+    body.classList.add('card-body');
+
+    let title = document.createElement('h3');
+    title.innerText = posts[i].title;
+    body.appendChild(title);
+
+    let text = document.createElement('p');
+    let postContent = posts[i].content;
+    if(posts[i].content.length > MAX_LENGTH){
+      postContent = postContent.slice(0, MAX_LENGTH);
+      postContent = postContent + " ...";
+      text.innerText = postContent;
+    }else{
+      text.innerText = postContent;
+    }
+
+    body.appendChild(text);
+
+    article.appendChild(body);
+    articlesContainer.appendChild(article);
+  }
 }
